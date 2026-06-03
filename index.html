@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Нейросфера | Каталог всех нейросетей мира</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #06040f;
+      color: #e8e0ff;
+      min-height: 100vh;
+    }
+    .stars {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--duration) infinite;
+      animation-delay: var(--delay);
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .app {
+      position: relative; z-index: 1;
+      max-width: 1400px; margin: 0 auto; padding: 1rem;
+    }
+    .header {
+      background: rgba(15, 10, 35, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(120, 80, 255, 0.2);
+      border-radius: 2rem;
+      padding: 1rem 2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      font-size: 1.8rem; font-weight: 800;
+      background: linear-gradient(135deg, #c084fc, #60a5fa, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+    .search-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+      background: rgba(15, 10, 35, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(120, 80, 255, 0.2);
+      border-radius: 2rem; padding: 0.5rem;
+    }
+    .search-bar input {
+      flex: 1; background: transparent; border: none;
+      color: white; padding: 0.8rem 1.2rem;
+      font-size: 1rem; font-family: 'Inter', sans-serif;
+    }
+    .search-bar input:focus { outline: none; }
+    .search-bar input::placeholder { color: #6b658b; }
+    .search-bar button {
+      background: #7c3aed; border: none; color: white;
+      padding: 0.8rem 1.5rem; border-radius: 2rem;
+      cursor: pointer; font-weight: 600;
+    }
+    .categories {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .cat-chip {
+      background: rgba(120, 80, 255, 0.1);
+      border: 1px solid rgba(120, 80, 255, 0.2);
+      padding: 0.5rem 1rem; border-radius: 2rem;
+      cursor: pointer; font-size: 0.85rem;
+      transition: 0.3s; color: #b9b3e0;
+    }
+    .cat-chip:hover, .cat-chip.active {
+      background: rgba(120, 80, 255, 0.3);
+      border-color: #a78bfa; color: white;
+    }
+    .section-title {
+      font-size: 1.3rem; margin: 1.5rem 0 1rem;
+      color: #e9d5ff; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .ai-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .ai-card {
+      background: rgba(15, 10, 35, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(120, 80, 255, 0.15);
+      border-radius: 1.5rem; padding: 1.5rem;
+      transition: 0.3s; cursor: pointer;
+      display: flex; flex-direction: column;
+    }
+    .ai-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(120, 80, 255, 0.5);
+      box-shadow: 0 15px 30px rgba(80, 40, 200, 0.3);
+    }
+    .ai-card .top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 0.5rem;
+    }
+    .ai-card .icon { font-size: 2.5rem; }
+    .ai-card .badge {
+      padding: 0.2rem 0.7rem; border-radius: 1rem;
+      font-size: 0.7rem; font-weight: 600;
+    }
+    .badge.free { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+    .badge.paid { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .badge.opensource { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .ai-card h3 { font-size: 1.1rem; margin-bottom: 0.2rem; color: #f0e6ff; }
+    .ai-card .company { font-size: 0.75rem; color: #8b7fb5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .ai-card p { font-size: 0.85rem; color: #a094c6; line-height: 1.4; flex: 1; margin-bottom: 0.8rem; }
+    .ai-card .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.8rem; }
+    .tag {
+      background: rgba(120, 80, 255, 0.2);
+      padding: 0.2rem 0.6rem; border-radius: 1rem;
+      font-size: 0.7rem; color: #b9a0ff;
+    }
+    .tag.code { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .tag.image { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .tag.video { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .tag.audio { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .tag.russian { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.5rem 1rem; border-radius: 1.5rem;
+      font-weight: 600; font-size: 0.8rem; cursor: pointer;
+      border: none; transition: 0.3s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: white; }
+    .btn-primary:hover { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: #c4b5fd; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .multi-task {
+      background: rgba(15, 10, 35, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(120, 80, 255, 0.3);
+      border-radius: 2rem; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .multi-task h3 { margin-bottom: 0.8rem; color: #c084fc; }
+    .multi-task textarea {
+      width: 100%; background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 1rem; padding: 1rem; color: white;
+      font-family: 'Inter', sans-serif; resize: vertical;
+      min-height: 80px; margin-bottom: 0.8rem;
+    }
+    .multi-task textarea:focus { outline: none; border-color: #a78bfa; }
+    .selected-ais { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
+    .selected-ai {
+      background: rgba(139, 92, 246, 0.3); border: 1px solid #a78bfa;
+      padding: 0.3rem 0.8rem; border-radius: 1rem;
+      font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;
+      cursor: pointer;
+    }
+    .stats-bar {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .stat-item {
+      background: rgba(15, 10, 35, 0.6);
+      border: 1px solid rgba(120, 80, 255, 0.2);
+      border-radius: 1rem; padding: 1rem 1.5rem;
+      backdrop-filter: blur(10px); text-align: center;
+    }
+    .stat-item .number {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, #c084fc, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-item .label { font-size: 0.8rem; color: #6b658b; }
+    .footer { text-align: center; color: #6b658b; padding: 2rem; font-size: 0.9rem; }
+    @media (max-width: 600px) {
+      .header { padding: 1rem; }
+      .ai-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="app">
+    <header class="header">
+      <div class="logo" onclick="location.reload()">🧠 Нейросфера</div>
+      <span style="color:#6b658b;">Каталог всех нейросетей мира</span>
+    </header>
+
+    <!-- Статистика -->
+    <div class="stats-bar" id="statsBar"></div>
+
+    <!-- Мульти-задача -->
+    <div class="multi-task">
+      <h3>🚀 Открыть задачу сразу в нескольких нейросетях</h3>
+      <textarea id="multiTask" placeholder="Введите ваш запрос... Например: напиши код игры на HTML"></textarea>
+      <div class="selected-ais" id="selectedAIs"></div>
+      <button class="btn btn-primary" onclick="openMultiTask()">⚡ Открыть в выбранных нейросетях</button>
+    </div>
+
+    <!-- Поиск -->
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Поиск по названию, компании, тегам...">
+      <button onclick="filterAI()">Найти</button>
+    </div>
+
+    <!-- Категории -->
+    <div class="categories" id="categories"></div>
+
+    <!-- Сетка -->
+    <div class="ai-grid" id="aiGrid"></div>
+
+    <div class="footer">
+      🧠 Нейросфера — каталог нейросетей мира. Кликайте на карточки, чтобы открыть нейросеть.
+    </div>
+  </div>
+
+  <script>
+    // Звёзды
+    (function() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 150; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        star.style.setProperty('--delay', Math.random() * 5 + 's');
+        container.appendChild(star);
+      }
+    })();
+
+    // ВСЕ нейросети мира
+    const allAI = [
+      // === OpenAI ===
+      { icon: '⚡', name: 'ChatGPT (GPT-4o)', company: 'OpenAI', desc: 'Флагманская модель. Текст, код, изображения, анализ файлов.', tags: ['Код', 'Текст', 'Изображения'], url: 'https://chat.openai.com', type: 'paid' },
+      { icon: '🧠', name: 'GPT-4 Turbo', company: 'OpenAI', desc: 'Контекст 128K. Сложный анализ и большие объёмы текста.', tags: ['Код', 'Аналитика'], url: 'https://chat.openai.com', type: 'paid' },
+      { icon: '🎨', name: 'DALL·E 3', company: 'OpenAI', desc: 'Генерация изображений высочайшего качества.', tags: ['Изображения', 'Дизайн'], url: 'https://openai.com/dall-e-3', type: 'paid' },
+      { icon: '🎤', name: 'Whisper', company: 'OpenAI', desc: 'Распознавание речи. Транскрибация аудио в текст.', tags: ['Аудио', 'Текст'], url: 'https://openai.com/whisper', type: 'opensource' },
+
+      // === Google ===
+      { icon: '⭐', name: 'Gemini 1.5 Pro', company: 'Google DeepMind', desc: 'Мультимодальная. Контекст 1M токенов. Код, видео, аудио.', tags: ['Код', 'Видео', 'Изображения'], url: 'https://gemini.google.com', type: 'free' },
+      { icon: '🌟', name: 'Gemini 1.5 Flash', company: 'Google DeepMind', desc: 'Быстрая версия Gemini. Отлично для повседневных задач.', tags: ['Текст', 'Быстро'], url: 'https://gemini.google.com', type: 'free' },
+      { icon: '🔬', name: 'Gemma 2', company: 'Google', desc: 'Открытая модель. Можно запустить на своём компьютере.', tags: ['Код', 'Open Source'], url: 'https://ai.google.dev/gemma', type: 'opensource' },
+      { icon: '🎵', name: 'MusicLM', company: 'Google', desc: 'Генерация музыки по текстовому описанию.', tags: ['Аудио', 'Музыка'], url: 'https://aitestkitchen.withgoogle.com', type: 'free' },
+      { icon: '🎬', name: 'Veo', company: 'Google DeepMind', desc: 'Генерация видео по тексту. Высочайшее качество.', tags: ['Видео'], url: 'https://deepmind.google/technologies/veo', type: 'paid' },
+      { icon: '📷', name: 'Imagen 3', company: 'Google DeepMind', desc: 'Генерация фотореалистичных изображений.', tags: ['Изображения'], url: 'https://deepmind.google/technologies/imagen-3', type: 'paid' },
+
+      // === Anthropic ===
+      { icon: '🪶', name: 'Claude 3.5 Sonnet', company: 'Anthropic', desc: 'Лучшая для кода. Превосходит GPT-4 в программировании.', tags: ['Код', 'Лучший'], url: 'https://claude.ai', type: 'free' },
+      { icon: '💎', name: 'Claude 3 Opus', company: 'Anthropic', desc: 'Максимальная мощность. Сложный анализ и творчество.', tags: ['Код', 'Аналитика', 'Творчество'], url: 'https://claude.ai', type: 'paid' },
+      { icon: '🍃', name: 'Claude 3 Haiku', company: 'Anthropic', desc: 'Самая быстрая модель Claude.', tags: ['Текст', 'Быстро'], url: 'https://claude.ai', type: 'free' },
+
+      // === DeepSeek ===
+      { icon: '🐉', name: 'DeepSeek V3', company: 'DeepSeek AI', desc: 'Мощная китайская модель. Открытый исходный код.', tags: ['Код', 'Open Source'], url: 'https://chat.deepseek.com', type: 'free' },
+      { icon: '🐲', name: 'DeepSeek Coder', company: 'DeepSeek AI', desc: 'Специализированная модель для программирования.', tags: ['Код', 'Open Source'], url: 'https://chat.deepseek.com', type: 'free' },
+
+      // === Meta ===
+      { icon: '🦙', name: 'Llama 3.1 405B', company: 'Meta', desc: 'Крупнейшая открытая модель. На уровне GPT-4.', tags: ['Код', 'Open Source', 'Локально'], url: 'https://meta.ai', type: 'opensource' },
+      { icon: '🦙', name: 'Llama 3.1 70B', company: 'Meta', desc: 'Сбалансированная открытая модель.', tags: ['Код', 'Open Source'], url: 'https://meta.ai', type: 'opensource' },
+      { icon: '💬', name: 'Meta AI', company: 'Meta', desc: 'Встроен в WhatsApp, Instagram, Facebook Messenger.', tags: ['Чат', 'Поиск'], url: 'https://www.meta.ai', type: 'free' },
+
+      // === Mistral ===
+      { icon: '🌬️', name: 'Mistral Large 2', company: 'Mistral AI', desc: 'Флагманская европейская модель. Мультиязычная.', tags: ['Код', 'Мультиязычность'], url: 'https://chat.mistral.ai', type: 'paid' },
+      { icon: '💨', name: 'Mistral Small', company: 'Mistral AI', desc: 'Лёгкая и быстрая французская модель.', tags: ['Текст', 'Быстро'], url: 'https://chat.mistral.ai', type: 'free' },
+      { icon: '🇫🇷', name: 'Le Chat', company: 'Mistral AI', desc: 'Чат-интерфейс. Европейский конкурент ChatGPT.', tags: ['Чат'], url: 'https://chat.mistral.ai', type: 'free' },
+
+      // === xAI ===
+      { icon: '🚀', name: 'Grok-2', company: 'xAI (Elon Musk)', desc: 'Доступ к X (Twitter) в реальном времени. Острый юмор.', tags: ['Новости', 'Поиск', 'Twitter'], url: 'https://x.ai', type: 'paid' },
+
+      // === Microsoft ===
+      { icon: '💻', name: 'Copilot', company: 'Microsoft', desc: 'Встроен в Windows 11, Edge, Office. GPT-4 бесплатно.', tags: ['Код', 'Windows', 'Office'], url: 'https://copilot.microsoft.com', type: 'free' },
+      { icon: '🖼️', name: 'Designer', company: 'Microsoft', desc: 'Генерация изображений. На базе DALL·E.', tags: ['Изображения', 'Дизайн'], url: 'https://designer.microsoft.com', type: 'free' },
+
+      // === Perplexity ===
+      { icon: '🔍', name: 'Perplexity', company: 'Perplexity AI', desc: 'Поисковик с ИИ. Ответы с источниками из интернета.', tags: ['Поиск', 'Источники'], url: 'https://perplexity.ai', type: 'free' },
+      { icon: '🔎', name: 'Perplexity Pro', company: 'Perplexity AI', desc: 'Продвинутый поиск с GPT-4 и Claude.', tags: ['Поиск', 'Исследования'], url: 'https://perplexity.ai', type: 'paid' },
+
+      // === Stability AI ===
+      { icon: '🎨', name: 'Stable Diffusion 3', company: 'Stability AI', desc: 'Генерация изображений. Открытая модель.', tags: ['Изображения', 'Open Source'], url: 'https://stability.ai', type: 'opensource' },
+      { icon: '🖌️', name: 'Stable Cascade', company: 'Stability AI', desc: 'Быстрая генерация изображений.', tags: ['Изображения'], url: 'https://stability.ai', type: 'free' },
+
+      // === Midjourney ===
+      { icon: '🖼️', name: 'Midjourney V6', company: 'Midjourney', desc: 'Лучшая для художественных изображений.', tags: ['Изображения', 'Арт', 'Дизайн'], url: 'https://midjourney.com', type: 'paid' },
+
+      // === Runway ===
+      { icon: '🎬', name: 'Runway Gen-3', company: 'Runway', desc: 'Генерация и редактирование видео с помощью ИИ.', tags: ['Видео', 'Монтаж'], url: 'https://runwayml.com', type: 'paid' },
+
+      // === Pika ===
+      { icon: '🎥', name: 'Pika', company: 'Pika Labs', desc: 'Создание коротких видео по тексту и картинкам.', tags: ['Видео', 'Анимация'], url: 'https://pika.art', type: 'free' },
+
+      // === Suno / Udio ===
+      { icon: '🎵', name: 'Suno AI', company: 'Suno', desc: 'Создание песен с вокалом. Любой жанр.', tags: ['Музыка', 'Вокал', 'Аудио'], url: 'https://suno.com', type: 'free' },
+      { icon: '🎶', name: 'Udio', company: 'Udio', desc: 'Генерация музыки высокого качества.', tags: ['Музыка', 'Аудио'], url: 'https://udio.com', type: 'free' },
+
+      // === ElevenLabs ===
+      { icon: '🎙️', name: 'ElevenLabs', company: 'ElevenLabs', desc: 'Синтез и клонирование голоса. Самое реалистичное.', tags: ['Аудио', 'Голос', 'Озвучка'], url: 'https://elevenlabs.io', type: 'free' },
+
+      // === Cohere ===
+      { icon: '🤖', name: 'Command R+', company: 'Cohere', desc: 'Корпоративная LLM. RAG, поиск по документам.', tags: ['Бизнес', 'Поиск', 'RAG'], url: 'https://cohere.com', type: 'paid' },
+
+      // === AI21 Labs ===
+      { icon: '📝', name: 'Jamba 1.5', company: 'AI21 Labs', desc: 'Гибрид Transformer + Mamba. Контекст 256K.', tags: ['Текст', 'Аналитика'], url: 'https://ai21.com', type: 'paid' },
+
+      // === Poe (агрегатор) ===
+      { icon: '🌐', name: 'Poe', company: 'Quora', desc: 'Доступ ко всем нейросетям в одном интерфейсе.', tags: ['Агрегатор', 'Все модели'], url: 'https://poe.com', type: 'free' },
+
+      // === HuggingFace ===
+      { icon: '🤗', name: 'HuggingChat', company: 'HuggingFace', desc: 'Открытый чат с сотнями бесплатных моделей.', tags: ['Open Source', 'Все модели'], url: 'https://huggingface.co/chat', type: 'free' },
+
+      // === Replit AI ===
+      { icon: '🟠', name: 'Replit AI', company: 'Replit', desc: 'ИИ для написания кода прямо в онлайн-редакторе.', tags: ['Код', 'IDE'], url: 'https://replit.com', type: 'free' },
+
+      // === Яндекс ===
+      { icon: '🇷🇺', name: 'YandexGPT 3', company: 'Яндекс', desc: 'Российская нейросеть. В Алисе, Браузере, Почте.', tags: ['Русский', 'Текст', 'Алиса'], url: 'https://ya.ru', type: 'free' },
+      { icon: '🔍', name: 'Нейро', company: 'Яндекс', desc: 'Поиск с ИИ. Отвечает на сложные вопросы.', tags: ['Поиск', 'Русский'], url: 'https://ya.ru', type: 'free' },
+
+      // === Сбер ===
+      { icon: '🏦', name: 'GigaChat', company: 'Сбер', desc: 'Российская мультимодальная модель. Код, текст, картинки.', tags: ['Русский', 'Код', 'Изображения'], url: 'https://gigachat.ai', type: 'free' },
+      { icon: '🖼️', name: 'Kandinsky 3.1', company: 'Сбер', desc: 'Российский генератор изображений.', tags: ['Изображения', 'Русский'], url: 'https://fusionbrain.ai', type: 'free' },
+
+      // === Adobe ===
+      { icon: '🎨', name: 'Firefly', company: 'Adobe', desc: 'Генерация изображений. Встроен в Photoshop.', tags: ['Изображения', 'Дизайн', 'Photoshop'], url: 'https://firefly.adobe.com', type: 'free' },
+
+      // === NVIDIA ===
+      { icon: '🖥️', name: 'Nemotron', company: 'NVIDIA', desc: 'Мощная модель, оптимизированная для GPU.', tags: ['Код', 'GPU', 'Бизнес'], url: 'https://nvidia.com', type: 'paid' },
+
+      // === Amazon ===
+      { icon: '☁️', name: 'Amazon Titan', company: 'AWS', desc: 'Модели для Amazon Bedrock. Корпоративный уровень.', tags: ['Корпоративный', 'AWS'], url: 'https://aws.amazon.com/bedrock', type: 'paid' },
+
+      // === Apple ===
+      { icon: '🍎', name: 'Apple Intelligence', company: 'Apple', desc: 'Встроенный ИИ в iPhone, iPad, Mac. Приватность.', tags: ['Приватность', 'iOS', 'Локально'], url: 'https://apple.com', type: 'free' },
+
+      // === Samsung ===
+      { icon: '📱', name: 'Galaxy AI', company: 'Samsung', desc: 'ИИ в смартфонах Samsung Galaxy.', tags: ['Мобильный', 'Фото', 'Текст'], url: 'https://samsung.com', type: 'free' },
+
+      // === Character.AI ===
+      { icon: '🎭', name: 'Character.AI', company: 'Character AI', desc: 'Общение с ИИ-персонажами. Любые личности.', tags: ['Чат', 'Персонажи', 'Общение'], url: 'https://character.ai', type: 'free' },
+    ];
+
+    const categories = ['Все', 'Код', 'Изображения', 'Видео', 'Музыка', 'Аудио', 'Поиск', 'Русский', 'Open Source', 'Бесплатно'];
+    let currentCategory = 'Все';
+    let multiSelected = [];
+
+    function renderStats() {
+      document.getElementById('statsBar').innerHTML = `
+        <div class="stat-item"><div class="number">${allAI.length}</div><div class="label">Нейросетей</div></div>
+        <div class="stat-item"><div class="number">${allAI.filter(a => a.tags.some(t => t.includes('Код'))).length}</div><div class="label">Пишут код</div></div>
+        <div class="stat-item"><div class="number">${allAI.filter(a => a.type === 'free' || a.type === 'opensource').length}</div><div class="label">Бесплатных</div></div>
+        <div class="stat-item"><div class="number">${allAI.filter(a => a.tags.some(t => t.includes('Русский'))).length}</div><div class="label">Русскоязычных</div></div>
+      `;
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categories');
+      container.innerHTML = '';
+      categories.forEach(cat => {
+        const chip = document.createElement('span');
+        chip.className = 'cat-chip';
+        if (cat === currentCategory) chip.classList.add('active');
+        chip.textContent = cat;
+        chip.onclick = () => {
+          currentCategory = cat;
+          renderCategories();
+          renderGrid();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function renderGrid(filter = '') {
+      const grid = document.getElementById('aiGrid');
+      let filtered = allAI;
+
+      if (currentCategory !== 'Все') {
+        filtered = filtered.filter(ai => ai.tags.some(t => t.includes(currentCategory)));
+      }
+      if (currentCategory === 'Бесплатно') {
+        filtered = allAI.filter(ai => ai.type === 'free' || ai.type === 'opensource');
+      }
+      if (currentCategory === 'Open Source') {
+        filtered = allAI.filter(ai => ai.type === 'opensource');
+      }
+
+      const s = filter.toLowerCase();
+      if (s) {
+        filtered = filtered.filter(ai =>
+          ai.name.toLowerCase().includes(s) ||
+          ai.company.toLowerCase().includes(s) ||
+          ai.desc.toLowerCase().includes(s) ||
+          ai.tags.some(t => t.toLowerCase().includes(s))
+        );
+      }
+
+      grid.innerHTML = '';
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#6b658b;">Ничего не найдено 😔</div>';
+        return;
+      }
+
+      filtered.forEach(ai => {
+        const card = document.createElement('div');
+        card.className = 'ai-card';
+        const badgeClass = ai.type === 'free' ? 'free' : ai.type === 'opensource' ? 'opensource' : 'paid';
+        const badgeText = ai.type === 'free' ? 'Бесплатно' : ai.type === 'opensource' ? 'Open Source' : 'Платно';
+        card.innerHTML = `
+          <div class="top">
+            <span class="icon">${ai.icon}</span>
+            <span class="badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <h3>${ai.name}</h3>
+          <div class="company">${ai.company}</div>
+          <p>${ai.desc}</p>
+          <div class="tags">${ai.tags.map(t => {
+            let cls = 'tag';
+            if (t.includes('Код')) cls += ' code';
+            if (t.includes('Изображения')) cls += ' image';
+            if (t.includes('Видео')) cls += ' video';
+            if (t.includes('Аудио') || t.includes('Музыка')) cls += ' audio';
+            if (t.includes('Русский')) cls += ' russian';
+            return `<span class="${cls}">${t}</span>`;
+          }).join('')}</div>
+          <div class="btn-row">
+            <a href="${ai.url}" target="_blank" class="btn btn-primary">🔗 Открыть</a>
+            <button class="btn btn-secondary" onclick="toggleMultiSelect('${ai.name}', '${ai.url}')">
+              ${multiSelected.find(m => m.name === ai.name) ? '✅ Выбрано' : '➕ В мульти-задачу'}
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleMultiSelect(name, url) {
+      const existing = multiSelected.findIndex(m => m.name === name);
+      if (existing > -1) {
+        multiSelected.splice(existing, 1);
+      } else {
+        multiSelected.push({ name, url });
+      }
+      renderMultiSelected();
+      renderGrid(document.getElementById('searchInput').value);
+    }
+
+    function renderMultiSelected() {
+      const container = document.getElementById('selectedAIs');
+      container.innerHTML = multiSelected.map(m =>
+        `<span class="selected-ai" onclick="toggleMultiSelect('${m.name}', '${m.url}')">${m.name} ✕</span>`
+      ).join('');
+      if (multiSelected.length === 0) {
+        container.innerHTML = '<span style="color:#6b658b;font-size:0.85rem;">Выберите нейросети (кнопка "➕ В мульти-задачу" на карточках)</span>';
+      }
+    }
+
+    function openMultiTask() {
+      const task = document.getElementById('multiTask').value.trim();
+      if (!task) return alert('Введите задачу!');
+      if (multiSelected.length === 0) return alert('Выберите хотя бы одну нейросеть!');
+
+      multiSelected.forEach(ai => {
+        let url = ai.url;
+        // Для чат-нейросетей пытаемся передать промпт
+        if (url.includes('chat.openai.com')) {
+          url = 'https://chat.openai.com';
+        } else if (url.includes('chat.deepseek.com')) {
+          url = 'https://chat.deepseek.com';
+        } else if (url.includes('gemini.google.com')) {
+          url = 'https://gemini.google.com';
+        } else if (url.includes('claude.ai')) {
+          url = 'https://claude.ai';
+        }
+        window.open(url, '_blank');
+      });
+
+      // Копируем задачу в буфер обмена
+      navigator.clipboard.writeText(task).then(() => {
+        alert(`✅ Задача скопирована в буфер обмена!\n\nОткрыто ${multiSelected.length} нейросетей.\nВставьте задачу (Ctrl+V) в каждой из них.`);
+      });
+    }
+
+    function filterAI() {
+      renderGrid(document.getElementById('searchInput').value);
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      renderGrid(this.value);
+    });
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') renderGrid(this.value);
+    });
+
+    // Инициализация
+    renderStats();
+    renderCategories();
+    renderGrid();
+    renderMultiSelected();
+  </script>
+</body>
+</html>
